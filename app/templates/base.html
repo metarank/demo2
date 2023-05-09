@@ -19,6 +19,17 @@
         margin-bottom: 40px;
       }
     </style>
+
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-80BGE9QYTM"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-80BGE9QYTM');
+    </script>
+
 </head>
 <body class="d-flex flex-column h-100">
     {{ bootstrap.load_js() }}
@@ -31,11 +42,37 @@
 
       <ul class="nav nav-pills">
         <li class="nav-item"><a href="/" class="nav-link active" aria-current="page">Search</a></li>
-        <li class="nav-item"><a href="/about" class="nav-link">About</a></li>
+        <li class="nav-item"><a href="https://github.com/metarank/demo2" class="nav-link">How it works?</a></li>
       </ul>
     </header>
     <main class="flex-shrink-0">
       <div class="content">
+        {% if help %}
+        <div class="container">
+          <p>
+            It's a demo of a hybrid search made over the <a href="https://github.com/amazon-science/esci-data">ESCI</a>/<a href="https://github.com/shuttie/esci-s">ESCI-S</a> datasets with final reranking made with <a href="https://github.com/metarank/metarank">Metarank</a>. To run locally, see <a href="https://github.com/metarank/demo2">github.com/metarank/demo2</a>
+          </p>
+
+          <p>Supported retrieval methods:</p>
+          <ul>
+            <li><strong>BM25 title</strong>: a typical ES search request over a title field.</li>
+            <li><strong>BM25 title, bullets, desc</strong>: ES search over `title`, `bullets` and `desc` fields without using boosting.</li>
+            <li><strong>all-MiniLM-L6-v2</strong>: approx. kNN vector search with ES, over embeddings made with <a href="https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2">sentence-transformers/all-MiniLM-L6-v2</a> model</li>
+            <li><strong>esci-MiniLM-L6-v2</strong>: approx. kNN vector search with ES, embeddings generated with a custom model fine-tuned over the ESCI dataset <a href="https://huggingface.co/metarank/esci-MiniLM-L6-v2">metarank/esci-MiniLM-L6-v2</a></li>
+          </ul>
+
+          <p>Supported re-ranking methods:</p>
+          <ul>
+            <li><strong>BM25 with optimal boosts</strong>: LambdaMART model over separate per-fields BM25 scores. Something like <a href="https://elasticsearch-learning-to-rank.readthedocs.io/en/latest/">ES-LTR</a> is doing.</li>
+            <li><strong>Cross-encoder: ce-msmarco-MiniLM-L6</strong>: A cross-encoder <a href="https://huggingface.co/cross-encoder/ms-marco-MiniLM-L-6-v2">sentence-transformers/ms-marco-MiniLM-L-6-v2</a> trained over the MS MARCO dataset.</li>
+            <li><strong>Cross-encoder: ce-esci-MiniLM-L12</strong>: A custom cross-encoder <a href="https://huggingface.co/metarank/ce-esci-MiniLM-L12-v2">metarank/ce-esci-MiniLM-L12-v2</a> fine-tuned over the ESCI dataset.</li>
+            <li><strong>LambdaMART: BM25, metadata</strong>: LambdaMART over all BM25 scores, and all <a href="https://github.com/metarank/demo2/blob/master/metarank/config.yml">document metadata fields</a> found in the <a href="https://github.com/shuttie/esci-s">ESCI-S</a> dataset. </li>
+            <li><strong>LambdaMART: esci-MiniLM-L6-v2, BM25, metadata</strong>: LambdaMART over all ranking features WITHOUT cross-encoders, for the sake of performance.</li>
+            <li><strong>LambdaMART: ce-esci-MiniLM-L12, esci-MiniLM-L6-v2, BM25, metadata</strong>: LambdaMART over all ranking features, can be quite slow.</li>
+          </ul>
+
+        </div>
+        {% endif %}
         {% block content %} {% endblock %}
       </div>
     </main>

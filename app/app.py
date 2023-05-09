@@ -2,7 +2,7 @@ from flask_bootstrap import Bootstrap5
 from flask import Flask, render_template, request
 from metarank import Metarank
 from elasticsearch import Elasticsearch
-import os, time
+import os, time, random
 
 app = Flask(__name__)
 
@@ -14,9 +14,11 @@ metarank = Metarank(MR_HOST)
 ES_HOST = os.getenv('ES_HOST')
 es = Elasticsearch(hosts=ES_HOST)
 
+example_queries = ["frying pan", "notebook", "wok", "walkie talkie"]
+
 @app.route('/')
 def index():
-	return render_template('search.html', took={})
+	return render_template('search.html', took={}, query=random.choice(example_queries), help=True)
 
 @app.route('/search', methods=['GET'])
 def search():
@@ -30,11 +32,8 @@ def search():
     sorted = rerank(rank, query, docs['hits']['hits'])
     done2 = time.time()
     print(done1-start)
-    return render_template('search.html', query=query, docs=sorted, method=method, rank=rank, size=n, took={"search": 1000*(done1-start), "rank": 1000*(done2-done1), "total": 1000*(done2-start)})
+    return render_template('search.html', help=False, query=query, docs=sorted, method=method, rank=rank, size=n, took={"search": 1000*(done1-start), "rank": 1000*(done2-done1), "total": 1000*(done2-start)})
 
-@app.route('/about')
-def about():
-    return render_template('about.html')
 
 def retrieve(method: str, query: str, n: int):
     match method:
@@ -78,4 +77,4 @@ def retrieve_vector(embedding: list[float], field: str, n: int):
 
 
 if __name__ == '__main__':
-	app.run(host='0.0.0.0', port=8000, debug=True)
+	app.run(host='0.0.0.0', port=8001, debug=True)
