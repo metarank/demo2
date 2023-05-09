@@ -1,15 +1,15 @@
 version: '2'
 
 services:
-  # webapp:
-  #   build:
-  #     context: app
-  #     dockerfile: Dockerfile
-  #   ports:
-  #     - 8000:8000
-  #   environment:
-  #     - MR_HOST=http://metarank:8080
-  #     - ES_HOST=http://elastic:9200
+  webapp:
+    build:
+      context: app
+      dockerfile: Dockerfile
+    ports:
+      - 8000:8000
+    environment:
+      - MR_HOST=http://metarank:8080
+      - ES_HOST=http://elastic:9200
 
   elastic:
     image: elasticsearch:8.7.1
@@ -23,12 +23,12 @@ services:
     volumes:
       - ./index:/index
 
-  # metarank:
-  #   image: metarank/metarank:0.7.1-M1-SNAPSHOT-amd64
-  #   command: serve --config /conf/config.yml 
-  #   ports:
-  #     - 8080:8080
-  #   environment:
-  #     - JAVA_OPTS=-Xmx1g
-  #   volumes:
-  #     - ./metarank:/conf/
+  metarank:
+    image: metarank/metarank:0.7.1-M1-SNAPSHOT-amd64
+    command: serve --config /conf/config.yml 
+    ports:
+      - 8080:8080
+    environment:
+      - JAVA_OPTS=-Xmx1g
+    volumes:
+      - ./metarank:/conf/
