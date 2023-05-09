@@ -18,7 +18,7 @@ example_queries = ["frying pan", "notebook", "wok", "walkie talkie"]
 
 @app.route('/')
 def index():
-	return render_template('search.html', took={}, query=random.choice(example_queries), help=True)
+	return render_template('search.html', query=random.choice(example_queries), help=True)
 
 @app.route('/search', methods=['GET'])
 def search():
