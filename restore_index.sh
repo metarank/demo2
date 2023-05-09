@@ -4,3 +4,4 @@ curl -XPUT -H "Content-Type: application/json" -d '{"type": "fs", "settings": {"
 
 curl -XGET -v http://localhost:9200/_snapshot/local/esci-snapshot?pretty
 
+curl -XPOST http://localhost:9200/_snapshot/local/esci-snapshot/_restore
