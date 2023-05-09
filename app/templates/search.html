@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <div class="px-2 py-2 my-2">
+    <form action="search">
+      <div class="row">
+          <div class="col-md-4">
+            <label for="query" class="form-label">Query</label>
+            <input type="text" id="query" name="query" class="form-control" aria-label="Default select example" value="{{ query }}">
+          </div>
+          <div class="col-md-2">
+            <label for="retrieval" class="form-label">Retrieval</label>
+            <select id="retrieval" name="retrieval" class="form-select" aria-label="Default select example">
+              <option value="bm25-title" {% if method == "bm25-title" %} selected {% endif %}>BM25 over title</option>
+              <option value="bm25-all" {% if method == "bm25-all" %} selected {% endif %}>BM25 over title, desc, bullets</option>
+              <option value="query_title_minilm" {% if method == "query_title_minilm" %} selected {% endif %}>all-MiniLM-L6-v2 - generic sbert.net</option>
+              <option value="query_title_minilm_ft" {% if method == "query_title_minilm_ft" %} selected {% endif %}>esci-MiniLM-L6-v2 - finetuned on ESCI</option>
+            </select>
+          </div>
+          <div class="col-md-2">
+            <label for="size" class="form-label">N</label>
+            <select id="size" name="size" class="form-select" aria-label="Default select example">
+              <option value="20" {% if size == 20 %} selected {% endif %}>20</option>
+              <option value="40" {% if size == 40 %} selected {% endif %}>40</option>
+              <option value="60" {% if size == 60 %} selected {% endif %}>60</option>
+              <option value="80" {% if size == 80 %} selected {% endif %}>80</option>
+              <option value="100" {% if size == 100 %} selected {% endif %}>100</option>
+            </select>
+          </div>
+          <div class="col-md-3">
+            <label for="rank" class="form-label">Re-ranking</label>
+            <select id="rank" name="rank" class="form-select" aria-label="Default select example">
+              <option value="noop" {% if rank == "noop" %} selected {% endif %}>None</option>
+              <option value="bm25" {% if rank == "bm25" %} selected {% endif %}>BM25: title, desc, bullets with optimal boosts</option>
+              <option value="ce" {% if rank == "ce" %} selected {% endif %}>Cross-encoder: ce-msmarco-MiniLM-L6</option>
+              <option value="ce-ft" {% if rank == "ce-ft" %} selected {% endif %}>Cross-encoder: ce-esci-MiniLM-L12</option>
+              <option value="ltr-bm25-meta" {% if rank == "ltr-bm25-meta" %} selected {% endif %}>LambdaMART: BM25, metadata</option>
+              <option value="ltr-bm25-meta-minilm" {% if rank == "ltr-bm25-meta-minilm" %} selected {% endif %}>LambdaMART: esci-MiniLM-L6-v2, BM25, metadata</option>
+              <option value="ltr-bm25-meta-minilm-ce" {% if rank == "ltr-bm25-meta-minilm-ce" %} selected {% endif %}>LambdaMART: ce-esci-MiniLM-L12, esci-MiniLM-L6-v2, BM25, metadata</option>
+            </select>
+          </div>
+          <div class="col-md-1">
+            <div class="row form-label">&nbsp;</div>
+            <div class="row"><button type="submit" class="btn btn-primary">Search</button></div>
+          </div>
+      </div>
+    </form>
+  </div>
+  {% if took is defined %}
+  <div class="alert alert-primary" role="alert">
+    retrieval: {{ took.get("search") }} ms, ranking: {{ took.get("rank") }} ms, total: {{ took.get("total") }} ms
+  </div>
+  {% endif %}
+
+  <div class="d-flex flex-wrap px-2 py-2 my-2 container-fluid">
+    {% for doc in docs %}
+      <div class="card shadow-sm px-2 py-2 mx-1 my-1" style="width: 20rem;">
+        <img class="card-img-top" height="200px" src="{{ doc['fields']['image'][0] }}" style="object-fit: cover;">
+        <div class="card-body">
+          <h5 class="card-title">{{ doc['fields']['title'][0] | truncate(64) }}</h5>
+          <p class="card-text">{{ doc['fields']['desc'][0] | truncate(64) }}</p>
+          <a href="https://amazon.com/dp/{{ doc['fields']['asin'][0] }}" class="card-link">{{ doc['fields']['asin'][0] }}</a>
+        </div>
+        <div class="card-footer">
+          <small class="text-muted">ES: {{ doc['_score'] | round(4) }} Metarank: {{ doc['_metarank'] | round(4) }} </small>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+{% endblock %}
+
+

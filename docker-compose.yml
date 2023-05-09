@@ -1,0 +1,34 @@
+version: '2'
+
+services:
+  # webapp:
+  #   build:
+  #     context: app
+  #     dockerfile: Dockerfile
+  #   ports:
+  #     - 8000:8000
+  #   environment:
+  #     - MR_HOST=http://metarank:8080
+  #     - ES_HOST=http://elastic:9200
+
+  elastic:
+    image: elasticsearch:8.7.1
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - ES_JAVA_OPTS=-Xms1024m -Xmx1024m
+      - path.repo=/index
+    ports:
+      - 9200:9200
+    volumes:
+      - ./index:/index
+
+  # metarank:
+  #   image: metarank/metarank:0.7.1-M1-SNAPSHOT-amd64
+  #   command: serve --config /conf/config.yml 
+  #   ports:
+  #     - 8080:8080
+  #   environment:
+  #     - JAVA_OPTS=-Xmx1g
+  #   volumes:
+  #     - ./metarank:/conf/
