@@ -6,6 +6,51 @@
 This repo contains a docker-compose manifest for running the [Metarank](https://github.com/metarank/metarank) demo website
 hosted on [demo.metarank.ai](https://demo.metarank.ai).
 
+## How the demo is made?
+
+It's a demo of a hybrid search made over the [ESCI](https://github.com/amazon-science/esci-data)/[ESCI-S](https://github.com/shuttie/esci-s) datasets with final reranking made with [Metarank](https://github.com/metarank/metarank).
+
+Supported retrieval methods:
+* **BM25 title**: a typical ES search request over `title` field.
+* **BM25 title, bullets, desc**: ES search over `title`, `bullets` and `desc` fields without using boosting.
+* **all-MiniLM-L6-v2**: approx. kNN vector search with ES, over embeddings made with [sentence-transformers/all-MiniLM-L6-v2](https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2) model
+* **esci-MiniLM-L6-v2**: approx. kNN vector search with ES, embeddings generated with a fine-tuned over the ESCI dataset [metarank/esci-MiniLM-L6-v2](https://huggingface.co/metarank/esci-MiniLM-L6-v2) model
+
+Supported re-ranking methods:
+* **None**: just do nothing
+* **BM25 with optimal boosts**: LambdaMART model over separate per-fields BM25 scores. Something like ES-LTR is doing.
+* **Cross-encoder: ce-msmarco-MiniLM-L6**: A cross-encoder [sentence-transformers/ms-marco-MiniLM-L-6-v2](https://huggingface.co/cross-encoder/ms-marco-MiniLM-L-6-v2) trained over the MS MARCO dataset.
+* **Cross-encoder: ce-esci-MiniLM-L12**: A custom cross-encoder [metarank/ce-esci-MiniLM-L12-v2](https://huggingface.co/metarank/ce-esci-MiniLM-L12-v2) fine-tuned over the ESCI dataset.
+* **LambdaMART: BM25, metadata**: LambdaMART over all BM25 scores, and all document metadata fields found in the [ESCI-S](https://github.com/shuttie/esci-s) dataset. For a full list, see `/metarank/config.yml`
+* **LambdaMART: esci-MiniLM-L6-v2, BM25, metadata**: LambdaMART over all ranking features WITHOUT cross-encoders, for the sake of performance.
+* **LambdaMART: ce-esci-MiniLM-L12, esci-MiniLM-L6-v2, BM25, metadata**: LambdaMART over all ranking features, can be quite slow.
+
+LambdaMART metarank setup for the biggest model (as others are using a subset of features):
+```yaml
+  ltr-bm25-meta-minilm-ce:
+    type: lambdamart
+    backend:
+      type: xgboost
+      iterations: 100
+    features:
+      - query_title_minilm_ft
+      - query_title_ce_ft
+      - query_title_bm25
+      - query_desc_bm25
+      - query_bullets_bm25
+      - category0
+      - category1
+      - category2
+      - color
+      - material
+      - price
+      - ratings
+      - stars
+      - template
+      - weight
+
+```
+
 ## Running demo locally
 
 ### Checking out the repo
